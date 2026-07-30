@@ -25,3 +25,4 @@ export function getUserAsset(userId: string, asset: string){
 
     return userAsset[asset]!;
 }
+

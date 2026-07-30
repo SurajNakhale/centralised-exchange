@@ -3,6 +3,9 @@ import { createClient } from "redis";
 import { env } from "./utils/env.js";
 import { depositMoney } from "./deposit/deposit.js";
 import { createOrder } from "./order/create-order.js";
+import { getDepth } from "./order/depth.js";
+import { getUserBalance } from "./deposit/helperBalance.js";
+import { cancelOrder } from "./order/cancel-order.js";
 
 export type EngineCommandType =
     "deposit"
@@ -72,7 +75,7 @@ function handleEngineRequest(message: EngineRequest) {
         return getUserBalance(message.payload);
 
     case "cancel_order":
-        return canacelOrder(message.payload);
+        return cancelOrder(message.payload);
 
     default:
         throw new Error(`Unknown message type: ${message.type}`);

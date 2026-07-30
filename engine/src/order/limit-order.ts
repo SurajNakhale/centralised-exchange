@@ -1,7 +1,7 @@
-import { getUserAsset } from "../deposit/balances";
+import { getUserAsset } from "../deposit/helperBalance";
 import { FILLS, ORDERBOOKS, ORDERS, type CreateOrderInput, type Fill, type OrderRecord, type RestingOrder, type Side } from "../types/exchange-store";
 
-function getOrderBook(symbol: string){
+export function getOrderBook(symbol: string){
     let orderbook = ORDERBOOKS.get(symbol);
 
     if(!orderbook){
@@ -191,7 +191,7 @@ export function handleLimitOrder(input: CreateOrderInput){
             createdAt: incomingOrder.createdAt
             
         }
-        
+
         currPriceOrders.push(restingorder);
     }
 
