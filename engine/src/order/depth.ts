@@ -21,7 +21,7 @@ function getDepthLevel(side: Map<number, RestingOrder[]>){
     return depth;
 }
 
-export function getDepth(payload: Record<string, unknown>){
+export function getDepth(payload: Record<string, unknown> | string){
     const symbol = payload as unknown as string;
     const orderbook = getOrderBook(symbol);
 

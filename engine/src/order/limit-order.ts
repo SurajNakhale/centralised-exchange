@@ -15,7 +15,7 @@ export function getOrderBook(symbol: string){
     return orderbook;
 }
 
-function settleBalances(buyerId: string, sellerId: string, tradeQty: number, tradePrice: number, symbol: string){
+export function settleBalances(buyerId: string, sellerId: string, tradeQty: number, tradePrice: number, symbol: string){
     const totalCost = tradePrice * tradeQty;
     
     const buyerINR = getUserAsset(buyerId, "INR")
@@ -43,7 +43,7 @@ function getBestPrice(side: Side, oppositeSide: Map<number, RestingOrder[]>){
     }
 }
 
-function updateOrderStatus(order: OrderRecord | RestingOrder){
+export function updateOrderStatus(order: OrderRecord | RestingOrder){
     if(order.filledQty > 0 && order.filledQty < order.qty){
         order.status = "partially_filled";
     }
@@ -55,7 +55,7 @@ function updateOrderStatus(order: OrderRecord | RestingOrder){
     }
 }
 
-function lockBalances(userId: string, asset: string, amountToLock: number){
+export function lockBalances(userId: string, asset: string, amountToLock: number){
     const userAssetBalance = getUserAsset(userId, asset);
 
     if(Number(userAssetBalance.available) < amountToLock) throw new Error("insufficient funds");

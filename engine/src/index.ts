@@ -4,8 +4,8 @@ import { env } from "./utils/env.js";
 import { depositMoney } from "./deposit/deposit.js";
 import { createOrder } from "./order/create-order.js";
 import { getDepth } from "./order/depth.js";
-import { getUserBalance } from "./deposit/helperBalance.js";
 import { cancelOrder } from "./order/cancel-order.js";
+import { getUserBalance } from "./order/balance.js";
 
 export type EngineCommandType =
     "deposit"
