@@ -1,9 +1,11 @@
 import { getUserAsset } from "../deposit/helperBalance";
-import { FILLS, ORDERS, type Fill, type OrderRecord, type RestingOrder, type Side } from "../types/exchange-store";
+import { publishToEventStream, type Ievent } from "../market-data/redis-stream";
+import { FILLS, ORDERS, TRADE_ID, type Fill, type OrderRecord, type RestingOrder, type Side } from "../types/exchange-store";
+import { getNextTradeId, getNextUpdateId } from "../utils/generateId";
 import { getDepth } from "./depth";
 import { getOrderBook, lockBalances, settleBalances, updateOrderStatus } from "./limit-order";
 
-export function handleMarketOrder(input: Record<string, unknown>){
+export async function handleMarketOrder(input: Record<string, unknown>){
     const qty = input.qty as unknown as number;
     const symbol = input.symbol as unknown as string;
     const userId = input.userId as unknown as string;
@@ -12,6 +14,8 @@ export function handleMarketOrder(input: Record<string, unknown>){
     const book = getOrderBook(symbol);
     const oppositeSide = side == "buy" ? book.asks : book.bids;
 
+
+    const events: Ievent[] = []
 
     let remainingQty: number = qty;
     let totalCost = 0;
@@ -79,15 +83,25 @@ export function handleMarketOrder(input: Record<string, unknown>){
             rest.filledQty += filled;
             incomingOrder.filledQty += filled;
 
+            const tradeId = getNextTradeId(symbol);
             const fill: Fill = {
                 fillId: crypto.randomUUID(),
                 symbol,
+                tradeId,
                 price: price,
                 qty: filled,
                 buyOrderId: side == "buy" ? incomingOrder.orderId : rest.orderId,
                 sellOrderId: side == "buy" ? rest.orderId : incomingOrder.orderId,
                 createdAt: Date.now(),
             }
+
+            events.push({
+                type: "trade",
+                topic: `trade.${symbol}`,
+                data: {
+                    fill
+                }
+            });
 
             incomingOrder.fills.push(fill);
             FILLS.push(fill);
@@ -119,6 +133,22 @@ export function handleMarketOrder(input: Record<string, unknown>){
             break;
         }
 
+    }
+
+    getNextUpdateId(symbol);
+    const depth = getDepth(symbol);
+    events.push({
+        type: "depth",
+        topic: `depth.${symbol}`,
+        data: {
+            depth
+        }
+    });
+
+    for(let event of events){
+        const streamId = await publishToEventStream(event);
+
+        console.log(`Published ${event.topic} to ${streamId}`);
     }
 
     return {

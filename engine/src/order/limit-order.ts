@@ -1,5 +1,8 @@
 import { getUserAsset } from "../deposit/helperBalance";
+import { publishToEventStream, type Ievent } from "../market-data/redis-stream";
 import { FILLS, ORDERBOOKS, ORDERS, type CreateOrderInput, type Fill, type OrderRecord, type RestingOrder, type Side } from "../types/exchange-store";
+import { getNextTradeId, getNextUpdateId } from "../utils/generateId";
+import { getDepth } from "./depth";
 
 export function getOrderBook(symbol: string){
     let orderbook = ORDERBOOKS.get(symbol);
@@ -75,17 +78,19 @@ function isMatchAble(side: string, bestPrice: number, price: number){
     return false;
 }
 
-export function handleLimitOrder(input: CreateOrderInput){
+export async function handleLimitOrder(input: CreateOrderInput){
     const {userId, type, side, symbol, price, qty} = input
     const orderId = crypto.randomUUID();
-    
+    const events: Ievent[] = [];
     const totalCost = (price || 0) * qty;
     //lock balances write helper function to do this
     let asset = (side == "buy") ? "INR" : symbol;
     let amountToLock = (side == "buy") ? totalCost : qty;
 
     lockBalances(userId, asset, amountToLock);
+    
 
+    
     const incomingOrder: OrderRecord = {
         orderId,
         userId,
@@ -99,13 +104,13 @@ export function handleLimitOrder(input: CreateOrderInput){
         status: "open",
         createdAt: Date.now()
     }
-
+    
     //we can set before cause object in js are referenced types
     ORDERS.set(incomingOrder.orderId, incomingOrder);
-
+    
     const book = getOrderBook(symbol)
     const oppositeSide = (side == "buy") ? book.asks : book.bids;
-
+    
     let remainingQty = qty;
     
     while(remainingQty > 0){
@@ -114,25 +119,27 @@ export function handleLimitOrder(input: CreateOrderInput){
         const bestPrice = getBestPrice(side, oppositeSide);
         if(!bestPrice) break;
         
-        if(!isMatchAble) break;
-
+        if(!isMatchAble(side, bestPrice, price!)) break;
+        
         let existingOrders: RestingOrder[] = oppositeSide.get(bestPrice)!;
-
+        
         for(let i=0; i<existingOrders.length; i++){
             let restingOrder = existingOrders[i]!;
             const orderQty = restingOrder.qty - restingOrder.filledQty;
             
             if(!orderQty) continue;
-
+            
             const filled = Math.min(orderQty, remainingQty);
             
             remainingQty -= filled;
             incomingOrder.filledQty += filled;
             restingOrder.filledQty += filled;
 
+            const tradeId = getNextTradeId(symbol);
             //add to fills
             const fill: Fill = {
                 fillId: crypto.randomUUID(),
+                tradeId: tradeId,
                 symbol: restingOrder.symbol,
                 price: restingOrder.price,
                 qty: filled,
@@ -141,6 +148,14 @@ export function handleLimitOrder(input: CreateOrderInput){
                 createdAt: Date.now()
             }
             
+            events.push({
+                type: "trade",
+                topic: `trade.${symbol}`,
+                data: {
+                    fill
+                }
+            });
+
             incomingOrder.fills.push(fill);
             FILLS.push(fill);
 
@@ -193,6 +208,22 @@ export function handleLimitOrder(input: CreateOrderInput){
         }
 
         currPriceOrders.push(restingorder);
+    }
+
+    getNextUpdateId(symbol);
+    const depth = getDepth(symbol);
+    events.push({
+        type: "depth",
+        topic: `depth.${symbol}`,
+        data: {
+            depth
+        }
+    })
+
+    for(let event of events){
+        const streamId = await publishToEventStream(event);
+        
+        console.log(`Published ${event.topic} to ${streamId}`);    
     }
 
     return {

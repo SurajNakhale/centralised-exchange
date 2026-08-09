@@ -1,4 +1,4 @@
-import { ORDERBOOKS, type RestingOrder } from "../types/exchange-store";
+import { ORDERBOOKS, ORDERBOOKS_SEQUENCE, type RestingOrder } from "../types/exchange-store";
 import { getOrderBook } from "./limit-order";
 
 function getDepthLevel(side: Map<number, RestingOrder[]>){
@@ -28,9 +28,11 @@ export function getDepth(payload: Record<string, unknown> | string){
     const newBids = getDepthLevel(orderbook.bids).sort((a, b) => b.price - a.price)
     const newAsks = getDepthLevel(orderbook.asks).sort((a, b) => a.price - b.price)
 
+    const updateId = ORDERBOOKS_SEQUENCE.get(symbol)!
 
     return {
         symbol: symbol,
+        lastUpdateId: updateId, 
         bids: newBids,
         asks: newAsks
     }

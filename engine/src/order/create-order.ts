@@ -1,10 +1,15 @@
 import { type CreateOrderInput } from "../types/exchange-store";
 import { handleLimitOrder } from "./limit-order";
+import { handleMarketOrder } from "./market-order";
 
-export function createOrder(payload: Record<string, unknown>){
-    const input = payload as unknown as CreateOrderInput;
+export async function createOrder(payload: Record<string, unknown>){
+    const lInput = payload as unknown as CreateOrderInput;
+    const mInput = payload;
 
-    if(input.type == "limit"){
-        return handleLimitOrder(input);
+    if(lInput.type == "limit"){
+        return await handleLimitOrder(lInput);
+    }
+    else{
+        return await handleMarketOrder(mInput);
     }
 }
