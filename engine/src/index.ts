@@ -37,7 +37,12 @@ const responseClient = createClient({ url: env.redisUrl }).on("error", (error) =
   console.error("Redis response client error", error);
 });
 
-await Promise.all([brokerClient.connect(), responseClient.connect()]);
+
+export const marketDataClient = createClient({ url: env.redisUrl }).on("error", (error) => {
+  console.error("Redis response client error", error);
+});
+
+await Promise.all([brokerClient.connect(), responseClient.connect(), marketDataClient.connect()]);
 
 
 async function sendResponse(responseQueue: string, response: EngineResponse): Promise<void> {
@@ -45,7 +50,7 @@ async function sendResponse(responseQueue: string, response: EngineResponse): Pr
 }
 
 
-function handleEngineRequest(message: EngineRequest) {
+async function handleEngineRequest(message: EngineRequest) {
   /**
    * TODO(student):
    * 1. Check _message.type.
@@ -66,7 +71,7 @@ function handleEngineRequest(message: EngineRequest) {
         return depositMoney(message.payload);
 
     case "create_order":
-        return createOrder(message.payload);
+        return await createOrder(message.payload);
 
     case "get_depth":
         return getDepth(message.payload);
@@ -99,12 +104,13 @@ for (;;) {
   }
 
   try {
-    const data = handleEngineRequest(message);
+    const data = await handleEngineRequest(message);
     await sendResponse(message.responseQueue, {
       correlationId: message.correlationId,
       ok: true,
       data,
     });
+    
   } catch (error) {
     await sendResponse(message.responseQueue, {
       correlationId: message.correlationId,

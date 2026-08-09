@@ -39,6 +39,7 @@ export interface OrderRecord {
 export interface Fill {
   fillId: string;
   symbol: string;
+  tradeId: number,
   price: number;
   qty: number;
   buyOrderId: string;
@@ -75,4 +76,5 @@ export const BALANCES = new Map<string, Record<string, Balance>>();
 export const ORDERBOOKS = new Map<string, OrderBook>();
 export const ORDERS = new Map<string, OrderRecord>();
 export const FILLS: Fill[] = [];
-
+export const ORDERBOOKS_SEQUENCE = new Map<string, number>();
+export const TRADE_ID = new Map<string, number>()
