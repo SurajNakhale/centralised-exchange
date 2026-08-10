@@ -1,8 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
 generator client {
   provider = "prisma-client"
   output   = "../prisma/generated/prisma"
@@ -11,9 +6,108 @@ generator client {
 datasource db {
   provider = "postgresql"
 }
+enum SIDE {
+  buy
+  sell
+}
+
+enum TYPE {
+  limit
+  market
+}
+
+enum STATUS {
+  open
+  partially_filled
+  filled
+  cancelled
+}
 
 model User {
   id           String          @id @default(uuid())
   username     String          @unique
   password     String
+
+  balance      Balance[]
+  order        Order[]
+}
+
+model Asset {
+  id           String          @id @default(uuid())
+  symbol       String           
+  name         String        
+
+  balance      Balance[]
+  baseAsset    Market[]        @relation("baseAsset")
+  quoteAsset   Market[]        @relation("quoteAsset")
+}
+
+model Balance {
+  id           String          @id @default(uuid())
+  userId       String           
+  assetId      String   
+
+  available    Decimal         @default(0)
+  locked       Decimal         @default(0)
+  
+  user         User            @relation(fields: [userId], references: [id])
+  asset        Asset           @relation(fields: [assetId], references: [id])
+
+  @@unique([userId, assetId])
+}
+
+
+model Market {
+  id           String          @id @default(uuid())
+
+  symbol       String           @unique
+
+  baseAssetId  String
+  quoteAssetId String
+
+  baseAsset    Asset           @relation("baseAsset", fields: [baseAssetId], references: [id])
+  quoteAsset   Asset           @relation("quoteAsset", fields: [quoteAssetId], references: [id])
+
+  order        Order[]
+}
+
+
+
+model Order {
+  id           String          @id
+
+  userId       String          
+  side         SIDE
+  type         TYPE
+  market       String
+
+  price        Decimal?
+  qty          Decimal
+  filledQty    Decimal         @default(0)
+
+  status       STATUS          @default(open)
+  createdAt    DateTime          
+
+  user         User            @relation(fields: [userId], references: [id])
+  marketRef    Market          @relation(fields: [market], references: [symbol])
+
+  buyFills     Fill[]          @relation("buyOrder")
+  sellFills    Fill[]          @relation("sellOrder")
+}
+
+model Fill{
+  id           String          @id
+  tradeId      Int
+
+  symbol       String
+  price        Decimal
+  qty          Decimal
+
+  buyOrderId   String
+  sellOrderId  String
+
+  buyorder     Order           @relation("buyOrder", fields: [buyOrderId], references: [id])
+  sellorder    Order           @relation("sellOrder", fields: [sellOrderId], references: [id])
+
+  createdAt    DateTime
 }
