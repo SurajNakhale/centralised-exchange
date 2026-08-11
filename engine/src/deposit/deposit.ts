@@ -13,6 +13,7 @@ export function depositMoney(payload: Record<string, unknown>){
 
     return {
         userId,
+        asset,
         userAsset
     }
 }
