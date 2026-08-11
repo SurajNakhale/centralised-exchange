@@ -3,6 +3,9 @@
   "module": "index.ts",
   "type": "module",
   "private": true,
+  "scripts": {
+    "dev": "bun src/index.ts"
+  },
   "devDependencies": {
     "@types/bun": "latest",
     "@types/pg": "^8.20.0",
@@ -17,6 +20,7 @@
     "@types/bcrypt": "^6.0.0",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
+    "@types/jsonwebtoken": "^9.0.10",
     "bcrypt": "^6.0.0",
     "cors": "^2.8.6",
     "crypto": "^1.0.1",
