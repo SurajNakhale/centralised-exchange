@@ -136,7 +136,7 @@ export async function handleMarketOrder(input: Record<string, unknown>){
     }
 
     getNextUpdateId(symbol);
-    const depth = getDepth(symbol);
+    const depth = getDepth({symbol});
     events.push({
         type: "depth",
         topic: `depth.${symbol}`,

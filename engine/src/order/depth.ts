@@ -21,8 +21,8 @@ function getDepthLevel(side: Map<number, RestingOrder[]>){
     return depth;
 }
 
-export function getDepth(payload: Record<string, unknown> | string){
-    const symbol = payload as unknown as string;
+export function getDepth(payload: Record<string, unknown>){
+    const symbol = payload.symbol as unknown as string;
     const orderbook = getOrderBook(symbol);
 
     const newBids = getDepthLevel(orderbook.bids).sort((a, b) => b.price - a.price)

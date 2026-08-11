@@ -210,8 +210,10 @@ export async function handleLimitOrder(input: CreateOrderInput){
         currPriceOrders.push(restingorder);
     }
 
+
+    //publish to the redis event stream
     getNextUpdateId(symbol);
-    const depth = getDepth(symbol);
+    const depth = getDepth({symbol});
     events.push({
         type: "depth",
         topic: `depth.${symbol}`,
