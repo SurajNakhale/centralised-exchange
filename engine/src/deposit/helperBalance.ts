@@ -6,8 +6,8 @@ export function getUserWallet(userId: string){
     let userWallet = BALANCES.get(userId);
 
     if(!userWallet){
-        userWallet = {},
-        BALANCES.set(userId, {});
+        userWallet = {};
+        BALANCES.set(userId, userWallet);
     }
 
     return userWallet!;
