@@ -78,7 +78,7 @@ export async function getBalance(req: Request, res: Response): Promise<void> {
   const engineResponse = await sendToEngine("get_user_balance", {
     userId: getUserId(req),
   });
-
+  console.log(engineResponse)
   res.status(engineResponse.ok ? 200 : 400).json(engineResponse.ok ? engineResponse.data : {
     error: engineResponse.error,
   });

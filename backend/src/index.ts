@@ -1,6 +1,6 @@
 import cors from "cors";
 import express, { type NextFunction, type Request, type Response } from "express";
-import { appRouter } from "./routes/index.js";
+import  appRouter  from "./routes/index.js";
 import { env } from "./utils/env.js";
 import {
   connectRedis,
