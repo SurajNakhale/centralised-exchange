@@ -1,6 +1,6 @@
 import axios from "axios";
 import WebSocket from "ws";
-
+import "dotenv/config"
 type orderBook = {
     bids: Record<string, string>, //key: price value: qty
     asks: Record<string, string>,
@@ -17,7 +17,11 @@ type buffer = {
     startOffset: number,
     endOffset: number
 }
-const ws = new WebSocket("wss://ws.backpack.exchange/")
+// const ws = new WebSocket("wss://ws.backpack.exchange/")
+const url = process.env["WS_SEVER_URL"];
+if(!url) throw new Error("required ws-server-url");
+
+const ws = new WebSocket(url!)
 let BUFFER: buffer[] = [];
 let conInit = false;
 
