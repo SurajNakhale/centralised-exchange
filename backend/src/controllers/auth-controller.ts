@@ -60,7 +60,7 @@ export async function signin(req: Request, res: Response, next: NextFunction): P
       return;
     };
 
-    const passMatch = bcrypt.compare(password, userExist.password);
+    const passMatch = await bcrypt.compare(password, userExist.password);
 
     if(!passMatch){
       res.status(401).json({error: "invalid username or password"});
