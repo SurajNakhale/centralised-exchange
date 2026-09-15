@@ -19,3 +19,34 @@ export interface EngineResponse {
   data?: unknown;
   error?: string;
 }
+
+export interface EngineFill {
+  fillId: string;
+  tradeId: number;
+  symbol: string;
+  price: number;
+  qty: number;
+  buyOrderId: string;
+  sellOrderId: string;
+  createdAt: number;
+}
+
+export interface EngineOrder {
+  orderId: string;
+  userId: string;
+  side: "buy" | "sell";
+  type: "limit" | "market";
+  symbol: string;
+  price: number | null;
+  qty: number;
+  filledQty: number;
+  status: "open" | "partially_filled" | "filled" | "cancelled";
+  fills: EngineFill[];
+  createdAt: number;
+}
+
+export interface CreateOrderResult {
+  message: string;
+  remainingQty?: number;
+  incomingOrder: EngineOrder;
+}
