@@ -13,8 +13,8 @@ export function getOrderBook(symbol: string){
             asks: new Map(),
         }
 
+        ORDERBOOKS.set(symbol, orderbook);
     }
-    ORDERBOOKS.set(symbol, orderbook);
     return orderbook;
 }
 
@@ -39,7 +39,7 @@ function getBestPrice(side: Side, oppositeSide: Map<number, RestingOrder[]>){
     if(prices.length == 0) return null;
 
     if(side == "buy"){
-        return prices.reduce((min, price) => Math.min(min, price))
+        return prices.reduce((min, price) => Math.min(min, price))//starts from 0 and 1
     } 
     else{
         return prices.reduce((max, price) => Math.max(max, price))
