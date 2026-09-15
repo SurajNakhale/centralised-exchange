@@ -34,12 +34,12 @@ model User {
 
 model Asset {
   id           String          @id @default(uuid())
-  symbol       String           
-  name         String        
+  symbol       String          @unique    //sol, btc, eth
+  name         String                     //solana, bitcoin, ethereum
 
   balance      Balance[]
-  baseAsset    Market[]        @relation("baseAsset")
-  quoteAsset   Market[]        @relation("quoteAsset")
+  baseAsset    Market[]        @relation("baseAsset") //appears first trading_symbol sol/usdt or btc/usdt ur buying or selling
+  quoteAsset   Market[]        @relation("quoteAsset")//second field 
 }
 
 model Balance {
@@ -60,7 +60,7 @@ model Balance {
 model Market {
   id           String          @id @default(uuid())
 
-  symbol       String           @unique
+  symbol       String           @unique   // sol/usdt btc/usdt   sol/btc
 
   baseAssetId  String
   quoteAssetId String
